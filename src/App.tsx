@@ -112,7 +112,107 @@ export default function App() {
               <div className="h-1 w-20 bg-brand" />
             </div>
 
-            {activeTab === 'dashboard' && <SmartStats />}
+            {activeTab === 'dashboard' && (
+              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <SmartStats />
+                
+                {/* Secondary Tactical Level */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Neural Feed - Scrollable Section */}
+                  <div className="lg:col-span-2 space-y-6">
+                    <div className="flex items-center justify-between">
+                      <h2 className="text-xl font-sans font-black tracking-tighter uppercase flex items-center gap-2">
+                        <ScanLine className="text-brand" size={20} />
+                        Intelligence Feed
+                      </h2>
+                      <div className="px-3 py-1 bg-brand/10 border border-brand/20 rounded-full text-[8px] font-mono font-bold text-brand uppercase tracking-widest animate-pulse">
+                        Live Uplink
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-zinc-800">
+                      {[
+                        { time: '09:42', event: 'Biometric Analysis Complete', detail: 'Optimal recovery window detected. Protein synthesis peaked 12m ago.', status: 'SUCCESS' },
+                        { time: '08:15', event: 'Neural Calibration', detail: 'Squat pattern accuracy improved by 4.2% across last 3 sessions.', status: 'OPTIMAL' },
+                        { time: '07:30', event: 'Hardware Sync', detail: 'External sensor array (AJ-Pod v2) successfully linked to core.', status: 'SYNCED' },
+                        { time: '06:00', event: 'Sleep Protocol', detail: 'Deep REM density: 24%. Recommended training intensity: 100%.', status: 'COMPLETED' },
+                        { time: '04:15', event: 'System Diagnostic', detail: 'All AJ FITNESS subsystems operating within peak voltage parameters.', status: 'STABLE' },
+                      ].map((log, i) => (
+                        <div key={i} className="glass-panel p-5 border-zinc-800 hover:border-brand/20 transition-all group">
+                          <div className="flex justify-between items-start mb-2">
+                            <div className="flex items-center gap-3">
+                              <span className="text-[10px] font-mono text-zinc-500">{log.time}</span>
+                              <span className="text-xs font-bold font-mono tracking-tight text-zinc-200 uppercase">{log.event}</span>
+                            </div>
+                            <span className={cn(
+                              "text-[8px] font-mono px-2 py-0.5 rounded border",
+                              log.status === 'OPTIMAL' || log.status === 'SUCCESS' ? "text-emerald-500 border-emerald-500/20 bg-emerald-500/5" : "text-brand border-brand/20 bg-brand/5"
+                            )}>{log.status}</span>
+                          </div>
+                          <p className="text-[11px] text-zinc-500 font-mono leading-relaxed">{log.detail}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Sidebar stats & Community */}
+                  <div className="space-y-6">
+                    <h2 className="text-xl font-sans font-black tracking-tighter uppercase">Hardware Infrastructure</h2>
+                    <div className="grid grid-cols-1 gap-3">
+                      {[
+                        { name: 'AJ-Pod v4', status: 'Online', battery: '92%' },
+                        { name: 'Biometric Strap', status: 'Linked', battery: '85%' },
+                        { name: 'Neural Link', status: 'Active', battery: 'N/A' },
+                      ].map((hw, i) => (
+                        <div key={i} className="glass-panel p-4 border-zinc-800 flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_#10b981]" />
+                             <span className="text-[10px] font-mono font-bold text-zinc-300">{hw.name}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                             <span className="text-[8px] font-mono text-zinc-500">{hw.battery}</span>
+                             <span className="text-[9px] font-mono font-bold text-brand uppercase">{hw.status}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <h2 className="text-xl font-sans font-black tracking-tighter uppercase">Elite Rankings</h2>
+                    <div className="glass-panel border-zinc-800 divide-y divide-zinc-800">
+                      {[
+                        { rank: '#1', user: 'AXEL_PRIME', power: '984', trend: 'up' },
+                        { rank: '#2', user: 'SARAH_SQUAT', power: '962', trend: 'down' },
+                        { rank: '#3', user: 'AJ_FOUNDER', power: '958', trend: 'up' },
+                        { rank: '#4', user: 'NEURAL_MAX', power: '921', trend: 'stable' },
+                      ].map((user, i) => (
+                        <div key={i} className="p-4 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
+                          <div className="flex items-center gap-4">
+                            <span className="font-mono text-xs font-bold text-brand">{user.rank}</span>
+                            <span className="font-mono text-xs font-bold text-zinc-300">{user.user}</span>
+                          </div>
+                          <div className="text-right">
+                             <div className="font-mono text-xs font-bold text-white">{user.power}</div>
+                             <div className="text-[8px] font-mono text-zinc-600 uppercase">Power Index</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="glass-panel p-6 bg-gradient-to-br from-indigo-500/10 to-brand/10 border-brand/20">
+                      <div className="flex items-center gap-3 mb-4">
+                         <div className="p-2 bg-brand/10 rounded-lg text-brand">
+                            <Zap size={16} />
+                         </div>
+                         <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-brand">Next Evolution</span>
+                      </div>
+                      <p className="text-xs text-zinc-200 leading-relaxed font-mono font-bold">
+                        Reach 1000 Power Index to unlock AJ Hyperloop training protocols.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
             {activeTab === 'vision' && <VisionModule />}
             {activeTab === 'diet' && <DietEngine />}
             {activeTab === 'tracking' && <BehaviorTracking />}

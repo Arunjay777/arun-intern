@@ -141,6 +141,16 @@ export const VisionModule = () => {
               Establish Vision Link
             </button>
             <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Awaiting Neural Interface Command</p>
+            
+            <div className="glass-panel p-4 bg-rose-500/5 border-rose-500/20 max-w-xs">
+              <div className="flex items-center gap-2 mb-2 text-rose-500">
+                <ShieldAlert size={14} />
+                <span className="text-[10px] font-mono font-bold uppercase tracking-widest">Protocol Help</span>
+              </div>
+              <p className="text-[9px] text-zinc-500 font-mono leading-relaxed">
+                If the camera fails to initialize: 1. Ensure browser permissions are "Allowed". 2. Verify hardware switch is ON. 3. Refresh protocol.
+              </p>
+            </div>
           </div>
         ) : (
           <>
