@@ -8,12 +8,14 @@ export const VisionModule = () => {
   const [showOverlay, setShowOverlay] = useState(true);
   const [autoDetect, setAutoDetect] = useState(true);
   const [isTraining, setIsTraining] = useState(false);
+  const [exerciseType, setExerciseType] = useState<'SQUAT' | 'DEADLIFT' | 'PRESS'>('SQUAT');
+  const [calibrationStatus, setCalibrationStatus] = useState<'NONE' | 'CALIBRATING' | 'READY'>('NONE');
   const [history, setHistory] = useState([
     { id: '1', type: 'Squat Protocol', date: '2024-04-26', duration: '12:45', reps: 45, status: 'Completed' },
     { id: '2', type: 'Deadlift Link', date: '2024-04-25', duration: '08:20', reps: 24, status: 'Completed' }
   ]);
   const [poseData, setPoseData] = useState({
-    squatDepth: 0,
+    depth: 0,
     repCount: 0,
     status: 'IDLE'
   });
@@ -32,10 +34,18 @@ export const VisionModule = () => {
       streamRef.current = stream;
       setIsActive(true);
       setIsTraining(false);
+      setCalibrationStatus('NONE');
     } catch (err) {
       console.error("Camera failed", err);
       alert("Camera access denied. Please check protocol permissions.");
     }
+  };
+
+  const startCalibration = () => {
+    setCalibrationStatus('CALIBRATING');
+    setTimeout(() => {
+      setCalibrationStatus('READY');
+    }, 3000);
   };
 
   const stopCamera = () => {
@@ -48,7 +58,7 @@ export const VisionModule = () => {
     if (poseData.repCount > 0) {
       const newSession = {
         id: Date.now().toString(),
-        type: 'Squat Session',
+        type: `${exerciseType.charAt(0) + exerciseType.slice(1).toLowerCase()} Session`,
         date: new Date().toISOString().split('T')[0],
         duration: '05:22', 
         reps: poseData.repCount,
@@ -59,22 +69,24 @@ export const VisionModule = () => {
 
     setIsActive(false);
     setIsTraining(false);
-    setPoseData({ squatDepth: 0, repCount: 0, status: 'IDLE' });
+    setExerciseType('SQUAT');
+    setCalibrationStatus('NONE');
+    setPoseData({ depth: 0, repCount: 0, status: 'IDLE' });
     if (videoRef.current) videoRef.current.srcObject = null;
   };
 
   const addRepManually = () => {
-    if (!isActive) return;
+    if (!isActive || calibrationStatus !== 'READY') return;
     setPoseData(prev => ({
       ...prev,
       repCount: prev.repCount + 1,
-      squatDepth: 85 + Math.random() * 10,
+      depth: 85 + Math.random() * 10,
       status: 'OPTIMAL'
     }));
     
     // Reset depth after a moment
     setTimeout(() => {
-      setPoseData(prev => ({ ...prev, squatDepth: 0 }));
+      setPoseData(prev => ({ ...prev, depth: 0 }));
     }, 1000);
   };
 
@@ -86,18 +98,18 @@ export const VisionModule = () => {
 
   useEffect(() => {
     let interval: any;
-    if (isActive && autoDetect && isTraining) {
+    if (isActive && autoDetect && isTraining && calibrationStatus === 'READY') {
       interval = setInterval(() => {
         setPoseData(prev => ({
           ...prev,
-          squatDepth: 70 + Math.random() * 20,
-          repCount: prev.repCount + (Math.random() > 0.7 ? 1 : 0),
-          status: Math.random() > 0.8 ? 'INCOMPLETE' : 'OPTIMAL'
+          depth: 70 + Math.random() * 20,
+          repCount: prev.repCount + (Math.random() > 0.8 ? 1 : 0),
+          status: Math.random() > 0.9 ? 'INCOMPLETE' : 'OPTIMAL'
         }));
       }, 3000);
     }
     return () => clearInterval(interval);
-  }, [isActive, autoDetect, isTraining]);
+  }, [isActive, autoDetect, isTraining, calibrationStatus]);
 
   return (
     <div className="glass-panel overflow-hidden border-zinc-800 bg-zinc-900/40">
@@ -183,7 +195,6 @@ export const VisionModule = () => {
               className="w-full h-full object-cover"
             />
             
-            {/* Real-time Overlay */}
             <AnimatePresence>
               {showOverlay && (
                 <motion.div 
@@ -192,79 +203,146 @@ export const VisionModule = () => {
                   exit={{ opacity: 0 }}
                   className="absolute inset-0 p-8 pointer-events-none"
                 >
-                  <div className="h-full w-full border border-brand/40 relative rounded-2xl">
+                  <div className="h-full w-full border border-brand/40 relative rounded-2xl overflow-hidden">
                     {/* Scanning Line */}
                     <div className="absolute inset-0 bg-gradient-to-b from-transparent via-brand/10 to-transparent h-1/2 w-full animate-scan" style={{ animation: 'scan 4s linear infinite' }} />
 
-                    {/* Adaptive Tracking Elements */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                       <div className="w-64 h-64 border-2 border-dashed border-brand/30 rounded-full animate-spin-slow" />
-                    </div>
-
-                    <div className="absolute top-6 left-6 space-y-4">
-                      <div className="glass-panel px-4 py-2 bg-black/60 border-zinc-800">
-                        <div className="text-[8px] text-zinc-500 uppercase font-mono mb-1">Target Identified</div>
-                        <div className="text-sm font-bold font-mono text-zinc-100">HUMAN_PROTOCOL_X</div>
-                      </div>
-                      
-                      <div className="flex flex-col gap-2">
-                        <div className="flex items-center gap-2 bg-black/60 px-3 py-1 rounded-lg border border-zinc-800 w-fit">
-                          <span className="font-mono text-[9px] text-zinc-400 uppercase">Stability</span>
-                          <div className="w-20 h-1 bg-zinc-800 rounded-full overflow-hidden">
-                             <div className="h-full bg-emerald-500 w-[85%]" />
+                    <div className="absolute inset-0 p-8 flex flex-col justify-between">
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                             <div className="w-2 h-2 rounded-full bg-brand animate-pulse" />
+                             <span className="text-[10px] font-mono text-brand font-bold uppercase tracking-[0.2em]">Neural_Link_Active</span>
                           </div>
+                          <h2 className="text-2xl font-sans font-black tracking-tighter text-white uppercase italic">{exerciseType}_ANALYSIS</h2>
+                        </div>
+                        
+                        <div className="flex gap-4 pointer-events-auto">
+                          {(['SQUAT', 'DEADLIFT', 'PRESS'] as const).map((type) => (
+                            <button
+                              key={type}
+                              onClick={() => setExerciseType(type)}
+                              disabled={isTraining || calibrationStatus === 'CALIBRATING'}
+                              className={cn(
+                                "px-4 py-2 rounded-xl text-[10px] font-mono font-bold uppercase transition-all border",
+                                exerciseType === type 
+                                  ? "bg-brand text-white border-brand shadow-[0_0_15px_rgba(79,70,229,0.4)]" 
+                                  : "bg-black/40 text-zinc-500 border-zinc-800 hover:border-zinc-600"
+                              )}
+                            >
+                              {type}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex justify-center flex-1 items-center">
+                        <AnimatePresence mode="wait">
+                          {calibrationStatus === 'CALIBRATING' && (
+                            <motion.div 
+                              key="calibrating"
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.8 }}
+                              className="bg-black/60 backdrop-blur-xl border border-brand/40 p-8 rounded-[2rem] text-center max-w-xs"
+                            >
+                              <div className="w-16 h-16 border-4 border-brand border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                              <h3 className="text-xl font-sans font-black text-white uppercase italic tracking-tighter mb-2">Calibrating</h3>
+                              <p className="text-[10px] font-mono text-zinc-400 uppercase leading-relaxed">Aligning neural mesh with biometric structure...</p>
+                            </motion.div>
+                          )}
+                          {calibrationStatus === 'NONE' && (
+                            <motion.button
+                              key="calibrate-btn"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              className="pointer-events-auto px-10 py-5 bg-brand text-white rounded-3xl font-sans font-black text-xl uppercase italic tracking-tighter hover:scale-105 transition-all shadow-[0_20px_50px_rgba(79,70,229,0.3)]"
+                              onClick={startCalibration}
+                            >
+                              Initialize Calibration
+                            </motion.button>
+                          )}
+                        </AnimatePresence>
+                      </div>
+
+                      <div className="flex justify-between items-end">
+                        <div className="grid grid-cols-2 gap-8">
+                          <div className="space-y-1">
+                            <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Range_Of_Motion</div>
+                            <div className="text-3xl font-mono font-black text-white">{Math.round(poseData.depth)}%</div>
+                            <div className="w-24 h-1 bg-zinc-800 rounded-full overflow-hidden">
+                              <motion.div 
+                                className="h-full bg-brand"
+                                animate={{ width: `${poseData.depth}%` }}
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Joint_Stability</div>
+                            <div className="text-3xl font-mono font-black text-emerald-500">98.4%</div>
+                            <div className="w-24 h-1 bg-zinc-800 rounded-full overflow-hidden">
+                              <div className="h-full bg-emerald-500 w-[98%]" />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col items-end gap-2">
+                          <div className="px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-lg">
+                            <span className="text-[8px] font-mono text-zinc-500 uppercase mr-2">Neural_Status:</span>
+                            <span className={cn(
+                              "text-[8px] font-mono font-bold uppercase",
+                              poseData.status === 'OPTIMAL' ? "text-emerald-500" : "text-brand"
+                            )}>{poseData.status}</span>
+                          </div>
+                          <div className="text-[8px] font-mono text-zinc-600 uppercase">Latency: 14ms | Accuracy: 99.1%</div>
                         </div>
                       </div>
                     </div>
+                  </div>
 
-                    <div className="absolute bottom-6 right-6 flex flex-col items-end gap-4 pointer-events-auto">
-                       <div className="text-right">
-                          <div className="text-[10px] font-mono text-brand mb-1 uppercase tracking-widest">Active Tracking</div>
-                          <div className="text-4xl font-mono font-black text-white tracking-widest leading-none">SQUAT_REPS: {poseData.repCount}</div>
-                       </div>
-                       
-                       <div className="flex gap-3">
-                         {!isTraining ? (
+                  <div className="absolute bottom-6 right-6 flex flex-col items-end gap-4 pointer-events-auto z-20">
+                     <div className="text-right">
+                        <div className="text-[10px] font-mono text-brand mb-1 uppercase tracking-widest">Active Tracking</div>
+                        <div className="text-4xl font-mono font-black text-white tracking-widest leading-none">{exerciseType}_REPS: {poseData.repCount}</div>
+                     </div>
+                     
+                     <div className="flex gap-3">
+                       {calibrationStatus === 'READY' && (
+                         <>
+                           {!isTraining ? (
+                             <button 
+                               onClick={() => setIsTraining(true)}
+                               className="px-6 py-3 bg-brand rounded-xl text-white font-mono font-bold text-xs uppercase tracking-widest hover:scale-105 transition-transform flex items-center gap-2 "
+                             >
+                               <Zap size={16} fill="currentColor" />
+                               Start Training
+                             </button>
+                           ) : (
+                             <button 
+                               onClick={() => setIsTraining(false)}
+                               className="px-6 py-3 bg-rose-500 rounded-xl text-white font-mono font-bold text-xs uppercase tracking-widest hover:scale-105 transition-transform flex items-center gap-2"
+                             >
+                               Pause Session
+                             </button>
+                           )}
+                           
                            <button 
-                             onClick={() => setIsTraining(true)}
-                             className="px-6 py-3 bg-brand rounded-xl text-white font-mono font-bold text-xs uppercase tracking-widest hover:scale-105 transition-transform flex items-center gap-2 "
+                             onClick={addRepManually}
+                             className="px-6 py-3 bg-white/10 border border-white/20 backdrop-blur-md rounded-xl text-white font-mono font-bold text-xs uppercase tracking-widest hover:bg-white/20 transition-all"
                            >
-                             <Zap size={16} fill="currentColor" />
-                             Start Training
+                             Add Rep
                            </button>
-                         ) : (
-                           <button 
-                             onClick={() => setIsTraining(false)}
-                             className="px-6 py-3 bg-rose-500 rounded-xl text-white font-mono font-bold text-xs uppercase tracking-widest hover:scale-105 transition-transform flex items-center gap-2"
-                           >
-                             Pause Session
-                           </button>
-                         )}
-                         
-                         <button 
-                           onClick={addRepManually}
-                           className="px-6 py-3 bg-white/10 border border-white/20 backdrop-blur-md rounded-xl text-white font-mono font-bold text-xs uppercase tracking-widest hover:bg-white/20 transition-all"
-                         >
-                           Add Rep
-                         </button>
-                       </div>
-                       
-                       <button 
-                         onClick={stopCamera}
-                         className="px-6 py-3 bg-zinc-900/80 backdrop-blur-md border border-zinc-800 rounded-xl text-zinc-400 font-mono font-bold text-xs uppercase tracking-widest hover:text-white transition-colors"
-                       >
-                         Terminate Link
-                       </button>
-                    </div>
-                    
-                    {/* Skeleton Visualization Mockup */}
-                    <motion.div 
-                      className="absolute left-1/3 top-1/2 w-4 h-4 rounded-full border-2 border-emerald-500 bg-emerald-500/20 shadow-[0_0_15px_#10b981]"
-                      animate={{ y: [0, 80, 0] }}
-                      transition={{ repeat: Infinity, duration: 2.5, ease: "easeInOut" }}
-                    >
-                      <div className="absolute top-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[8px] font-mono text-emerald-500 bg-black/50 px-1">JOINT_CORE</div>
-                    </motion.div>
+                         </>
+                       )}
+                     </div>
+                     
+                     <button 
+                       onClick={stopCamera}
+                       className="px-6 py-3 bg-zinc-900/80 backdrop-blur-md border border-zinc-800 rounded-xl text-zinc-400 font-mono font-bold text-xs uppercase tracking-widest hover:text-white transition-colors"
+                     >
+                       Terminate Link
+                     </button>
                   </div>
                 </motion.div>
               )}
