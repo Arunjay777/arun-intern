@@ -212,6 +212,41 @@ export default function App() {
                         Reach 1000 Power Index to unlock AJ Hyperloop training protocols.
                       </p>
                     </div>
+
+                    <div className="glass-panel p-6 border-zinc-800">
+                      <h3 className="text-xs font-mono font-bold uppercase tracking-widest text-zinc-400 mb-4">Daily Mission</h3>
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-end">
+                           <div className="text-sm font-bold uppercase text-zinc-100">Neural Sync 500</div>
+                           <div className="text-[10px] font-mono text-brand">420/500 Reps</div>
+                        </div>
+                        <div className="w-full h-1 bg-zinc-800 rounded-full overflow-hidden">
+                           <div className="h-full bg-brand w-[84%]" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Scrolling Content */}
+                <div className="pt-8 border-t border-zinc-800">
+                  <h2 className="text-2xl font-sans font-black tracking-tighter uppercase mb-6">Global Expansion Protocol</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[
+                      { city: 'Neo-Tokyo', users: '12.4k', growth: '+15%' },
+                      { city: 'London Core', users: '8.2k', growth: '+22%' },
+                      { city: 'NY-District', users: '15.1k', growth: '+10%' },
+                      { city: 'Singapore AI', users: '6.7k', growth: '+31%' },
+                    ].map((hub, i) => (
+                      <div key={i} className="glass-panel p-5 border-zinc-800 hover:border-brand/40 transition-all group cursor-pointer">
+                        <div className="text-[10px] font-mono text-zinc-500 uppercase mb-2">Neural Hub</div>
+                        <div className="text-lg font-sans font-black uppercase text-zinc-100 group-hover:text-brand transition-colors">{hub.city}</div>
+                        <div className="flex justify-between items-center mt-4">
+                          <span className="text-xs font-mono font-bold text-zinc-300">{hub.users}</span>
+                          <span className="text-[9px] font-mono font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded">{hub.growth}</span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>

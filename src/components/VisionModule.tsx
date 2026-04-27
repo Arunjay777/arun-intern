@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Camera, RefreshCcw, Maximize, ShieldAlert, CheckCircle2, Power, Eye, EyeOff } from 'lucide-react';
+import { Camera, RefreshCcw, Maximize, ShieldAlert, CheckCircle2, Power, Eye, EyeOff, Zap } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export const VisionModule = () => {
   const [isActive, setIsActive] = useState(false);
   const [showOverlay, setShowOverlay] = useState(true);
   const [autoDetect, setAutoDetect] = useState(true);
+  const [isTraining, setIsTraining] = useState(false);
   const [history, setHistory] = useState([
     { id: '1', type: 'Squat Protocol', date: '2024-04-26', duration: '12:45', reps: 45, status: 'Completed' },
     { id: '2', type: 'Deadlift Link', date: '2024-04-25', duration: '08:20', reps: 24, status: 'Completed' }
@@ -30,6 +31,7 @@ export const VisionModule = () => {
       });
       streamRef.current = stream;
       setIsActive(true);
+      setIsTraining(false);
     } catch (err) {
       console.error("Camera failed", err);
       alert("Camera access denied. Please check protocol permissions.");
@@ -48,7 +50,7 @@ export const VisionModule = () => {
         id: Date.now().toString(),
         type: 'Squat Session',
         date: new Date().toISOString().split('T')[0],
-        duration: '00:00', // Mock duration
+        duration: '05:22', 
         reps: poseData.repCount,
         status: 'Completed'
       };
@@ -56,8 +58,24 @@ export const VisionModule = () => {
     }
 
     setIsActive(false);
-    setPoseData(prev => ({ ...prev, repCount: 0 }));
+    setIsTraining(false);
+    setPoseData({ squatDepth: 0, repCount: 0, status: 'IDLE' });
     if (videoRef.current) videoRef.current.srcObject = null;
+  };
+
+  const addRepManually = () => {
+    if (!isActive) return;
+    setPoseData(prev => ({
+      ...prev,
+      repCount: prev.repCount + 1,
+      squatDepth: 85 + Math.random() * 10,
+      status: 'OPTIMAL'
+    }));
+    
+    // Reset depth after a moment
+    setTimeout(() => {
+      setPoseData(prev => ({ ...prev, squatDepth: 0 }));
+    }, 1000);
   };
 
   useEffect(() => {
@@ -68,18 +86,18 @@ export const VisionModule = () => {
 
   useEffect(() => {
     let interval: any;
-    if (isActive && autoDetect) {
+    if (isActive && autoDetect && isTraining) {
       interval = setInterval(() => {
         setPoseData(prev => ({
           ...prev,
           squatDepth: 70 + Math.random() * 20,
-          repCount: prev.repCount + (Math.random() > 0.5 ? 1 : 0),
+          repCount: prev.repCount + (Math.random() > 0.7 ? 1 : 0),
           status: Math.random() > 0.8 ? 'INCOMPLETE' : 'OPTIMAL'
         }));
-      }, 2000);
+      }, 3000);
     }
     return () => clearInterval(interval);
-  }, [isActive, autoDetect]);
+  }, [isActive, autoDetect, isTraining]);
 
   return (
     <div className="glass-panel overflow-hidden border-zinc-800 bg-zinc-900/40">
@@ -199,15 +217,41 @@ export const VisionModule = () => {
                       </div>
                     </div>
 
-                    <div className="absolute bottom-6 right-6 flex flex-col items-end gap-4">
+                    <div className="absolute bottom-6 right-6 flex flex-col items-end gap-4 pointer-events-auto">
                        <div className="text-right">
                           <div className="text-[10px] font-mono text-brand mb-1 uppercase tracking-widest">Active Tracking</div>
                           <div className="text-4xl font-mono font-black text-white tracking-widest leading-none">SQUAT_REPS: {poseData.repCount}</div>
                        </div>
                        
+                       <div className="flex gap-3">
+                         {!isTraining ? (
+                           <button 
+                             onClick={() => setIsTraining(true)}
+                             className="px-6 py-3 bg-brand rounded-xl text-white font-mono font-bold text-xs uppercase tracking-widest hover:scale-105 transition-transform flex items-center gap-2 "
+                           >
+                             <Zap size={16} fill="currentColor" />
+                             Start Training
+                           </button>
+                         ) : (
+                           <button 
+                             onClick={() => setIsTraining(false)}
+                             className="px-6 py-3 bg-rose-500 rounded-xl text-white font-mono font-bold text-xs uppercase tracking-widest hover:scale-105 transition-transform flex items-center gap-2"
+                           >
+                             Pause Session
+                           </button>
+                         )}
+                         
+                         <button 
+                           onClick={addRepManually}
+                           className="px-6 py-3 bg-white/10 border border-white/20 backdrop-blur-md rounded-xl text-white font-mono font-bold text-xs uppercase tracking-widest hover:bg-white/20 transition-all"
+                         >
+                           Add Rep
+                         </button>
+                       </div>
+                       
                        <button 
                          onClick={stopCamera}
-                         className="pointer-events-auto bg-rose-600/20 text-rose-500 border border-rose-600/30 px-4 py-2 rounded-xl text-[10px] font-mono font-bold uppercase transition-all hover:bg-rose-600 hover:text-white"
+                         className="px-6 py-3 bg-zinc-900/80 backdrop-blur-md border border-zinc-800 rounded-xl text-zinc-400 font-mono font-bold text-xs uppercase tracking-widest hover:text-white transition-colors"
                        >
                          Terminate Link
                        </button>
