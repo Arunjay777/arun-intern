@@ -1,10 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import ReactPlayer from 'react-player';
 import { Play, Pause, SkipForward, SkipBack, Volume2, Music, Zap } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 const PLAYLIST = [
-  { id: '1', title: 'BEAT_IT', artist: 'MICHAEL_JACKSON', url: 'https://www.youtube.com/watch?v=oRdxUFDoQe0' },
+  { id: '1', title: 'BEAT_IT', artist: 'MICHAEL_JACKSON', url: 'https://cdn.pixabay.com/audio/2022/03/10/audio_c8c8a7315b.mp3' }, // Placeholder for now, real MJ is hard to direct-link
   { id: '2', title: 'NEURAL_DRIFT', artist: 'AJ_FLOW', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
   { id: '3', title: 'SYNTH_PULSE', artist: 'VOLTAGE_CORE', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3' },
   { id: '4', title: 'CYBER_STIM', artist: 'NEO_GLITCH', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3' },
@@ -18,11 +17,29 @@ export const AudioEngine = ({ autoPlay = false }: AudioEngineProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [volume, setVolume] = useState(0.5);
-  const playerRef = useRef<any>(null);
-  
-  const Player = ReactPlayer as any;
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const currentTrack = PLAYLIST[currentTrackIndex];
+
+  useEffect(() => {
+    if (autoPlay) {
+      setIsPlaying(true);
+    }
+  }, [autoPlay]);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+      if (isPlaying) {
+        audioRef.current.play().catch(err => {
+          console.error("Playback failed", err);
+          setIsPlaying(false);
+        });
+      } else {
+        audioRef.current.pause();
+      }
+    }
+  }, [isPlaying, currentTrackIndex, volume]);
 
   const togglePlay = () => {
     setIsPlaying(!isPlaying);
@@ -40,22 +57,12 @@ export const AudioEngine = ({ autoPlay = false }: AudioEngineProps) => {
 
   return (
     <div className="glass-panel p-4 border-zinc-800 bg-black/40 backdrop-blur-xl flex items-center justify-between gap-6 pointer-events-auto">
-      <div className="hidden">
-        <Player
-          ref={playerRef}
-          url={currentTrack.url}
-          playing={isPlaying}
-          volume={volume}
-          onEnded={nextTrack}
-          width="0"
-          height="0"
-          config={{
-            youtube: {
-              playerVars: { showinfo: 0, controls: 0, modestbranding: 1 }
-            }
-          }}
-        />
-      </div>
+      <audio
+        ref={audioRef}
+        src={currentTrack.url}
+        onEnded={nextTrack}
+        className="hidden"
+      />
       
       <div className="flex items-center gap-4">
         <div className="w-10 h-10 bg-brand/10 border border-brand/20 rounded-xl flex items-center justify-center text-brand relative overflow-hidden group">
