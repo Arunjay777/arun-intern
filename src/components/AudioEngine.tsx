@@ -3,9 +3,10 @@ import { Play, Pause, SkipForward, SkipBack, Volume2, Music, Zap } from 'lucide-
 import { cn } from '../lib/utils';
 
 const PLAYLIST = [
-  { id: '1', title: 'NEURAL_DRIFT', artist: 'AJ_FLOW', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
-  { id: '2', title: 'SYNTH_PULSE', artist: 'VOLTAGE_CORE', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3' },
-  { id: '3', title: 'CYBER_STIM', artist: 'NEO_GLITCH', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3' },
+  { id: '1', title: 'BEAT_IT', artist: 'MICHAEL_JACKSON', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
+  { id: '2', title: 'NEURAL_DRIFT', artist: 'AJ_FLOW', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3' },
+  { id: '3', title: 'SYNTH_PULSE', artist: 'VOLTAGE_CORE', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3' },
+  { id: '4', title: 'CYBER_STIM', artist: 'NEO_GLITCH', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3' },
 ];
 
 interface AudioEngineProps {
