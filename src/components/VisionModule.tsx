@@ -304,7 +304,14 @@ export const VisionModule = () => {
                   <div className="absolute bottom-6 right-6 flex flex-col items-end gap-4 pointer-events-auto z-20">
                      <div className="text-right">
                         <div className="text-[10px] font-mono text-brand mb-1 uppercase tracking-widest">Active Tracking</div>
-                        <div className="text-4xl font-mono font-black text-white tracking-widest leading-none">{exerciseType}_REPS: {poseData.repCount}</div>
+                        <motion.div 
+                          key={poseData.repCount}
+                          initial={{ scale: 1 }}
+                          animate={{ scale: [1, 1.2, 1] }}
+                          className="text-4xl font-mono font-black text-white tracking-widest leading-none"
+                        >
+                          {exerciseType}_REPS: {poseData.repCount}
+                        </motion.div>
                      </div>
                      
                      <div className="flex gap-3">

@@ -22,6 +22,7 @@ import { DietEngine } from './components/DietEngine';
 import { BehaviorTracking } from './components/BehaviorTracking';
 import { AIChatSidebar } from './components/AIChatSidebar';
 import { ProtocolLibrary } from './components/ProtocolLibrary';
+import { AudioEngine } from './components/AudioEngine';
 
 type NavTab = 'dashboard' | 'vision' | 'diet' | 'tracking' | 'protocols';
 
@@ -288,6 +289,11 @@ export default function App() {
         </div>
 
         <AIChatSidebar isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+
+        {/* Global Audio Engine - High Performance Training Tracks */}
+        <div className="fixed bottom-8 left-8 right-24 md:right-auto md:w-96 z-50 animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-500">
+          <AudioEngine />
+        </div>
       </main>
 
       {/* Protocol Footer */}
