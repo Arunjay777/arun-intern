@@ -1,0 +1,6 @@
+{
+  "name": "AJ FITNESS",
+  "description": "Unified flagship AI Gym & Fitness Assistant. Integrated workout detection, diet planning, and IoT smart assistance.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["AI Fitness Assistant", "Workout Tracking", "Diet Planning"]
+}
