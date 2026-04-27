@@ -29,10 +29,7 @@ export const VisionModule = () => {
         } 
       });
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        setIsActive(true);
-      }
+      setIsActive(true);
     } catch (err) {
       console.error("Camera failed", err);
       alert("Camera access denied. Please check protocol permissions.");
@@ -62,6 +59,12 @@ export const VisionModule = () => {
     setPoseData(prev => ({ ...prev, repCount: 0 }));
     if (videoRef.current) videoRef.current.srcObject = null;
   };
+
+  useEffect(() => {
+    if (isActive && streamRef.current && videoRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+    }
+  }, [isActive]);
 
   useEffect(() => {
     let interval: any;

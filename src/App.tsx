@@ -12,7 +12,8 @@ import {
   X,
   Bell,
   Settings,
-  Search
+  Search,
+  BookOpen
 } from 'lucide-react';
 import { cn } from './lib/utils';
 import { SmartStats } from './components/SmartStats';
@@ -20,8 +21,9 @@ import { VisionModule } from './components/VisionModule';
 import { DietEngine } from './components/DietEngine';
 import { BehaviorTracking } from './components/BehaviorTracking';
 import { AIChatSidebar } from './components/AIChatSidebar';
+import { ProtocolLibrary } from './components/ProtocolLibrary';
 
-type NavTab = 'dashboard' | 'vision' | 'diet' | 'tracking';
+type NavTab = 'dashboard' | 'vision' | 'diet' | 'tracking' | 'protocols';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
@@ -33,6 +35,7 @@ export default function App() {
     { id: 'vision', label: 'VisionAI Link', icon: ScanLine },
     { id: 'diet', label: 'Diet Engine', icon: Utensils },
     { id: 'tracking', label: 'Performance Matrix', icon: BarChart3 },
+    { id: 'protocols', label: 'Training Library', icon: BookOpen },
   ];
 
   return (
@@ -216,6 +219,7 @@ export default function App() {
             {activeTab === 'vision' && <VisionModule />}
             {activeTab === 'diet' && <DietEngine />}
             {activeTab === 'tracking' && <BehaviorTracking />}
+            {activeTab === 'protocols' && <ProtocolLibrary />}
           </motion.div>
         </AnimatePresence>
 
