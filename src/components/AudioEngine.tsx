@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
+import ReactPlayer from 'react-player';
 import { Play, Pause, SkipForward, SkipBack, Volume2, Music, Zap } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 const PLAYLIST = [
-  { id: '1', title: 'BEAT_IT', artist: 'MICHAEL_JACKSON', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
-  { id: '2', title: 'NEURAL_DRIFT', artist: 'AJ_FLOW', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3' },
-  { id: '3', title: 'SYNTH_PULSE', artist: 'VOLTAGE_CORE', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3' },
-  { id: '4', title: 'CYBER_STIM', artist: 'NEO_GLITCH', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3' },
+  { id: '1', title: 'BEAT_IT', artist: 'MICHAEL_JACKSON', url: 'https://www.youtube.com/watch?v=oRdxUFDoQe0' },
+  { id: '2', title: 'NEURAL_DRIFT', artist: 'AJ_FLOW', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3' },
+  { id: '3', title: 'SYNTH_PULSE', artist: 'VOLTAGE_CORE', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3' },
+  { id: '4', title: 'CYBER_STIM', artist: 'NEO_GLITCH', url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3' },
 ];
 
 interface AudioEngineProps {
@@ -17,29 +18,14 @@ export const AudioEngine = ({ autoPlay = false }: AudioEngineProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [volume, setVolume] = useState(0.5);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const playerRef = useRef<any>(null);
+  
+  const Player = ReactPlayer as any;
 
   const currentTrack = PLAYLIST[currentTrackIndex];
 
-  useEffect(() => {
-    if (autoPlay && audioRef.current) {
-      audioRef.current.play().catch(() => {
-        // Autoplay might be blocked by browser until user interaction
-        console.log('Autoplay blocked');
-      });
-      setIsPlaying(true);
-    }
-  }, [autoPlay]);
-
   const togglePlay = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-      } else {
-        audioRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
-    }
+    setIsPlaying(!isPlaying);
   };
 
   const nextTrack = () => {
@@ -52,22 +38,24 @@ export const AudioEngine = ({ autoPlay = false }: AudioEngineProps) => {
     setIsPlaying(true);
   };
 
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-      if (isPlaying) {
-        audioRef.current.play().catch(() => setIsPlaying(false));
-      }
-    }
-  }, [currentTrackIndex, volume]);
-
   return (
     <div className="glass-panel p-4 border-zinc-800 bg-black/40 backdrop-blur-xl flex items-center justify-between gap-6 pointer-events-auto">
-      <audio
-        ref={audioRef}
-        src={currentTrack.url}
-        onEnded={nextTrack}
-      />
+      <div className="hidden">
+        <Player
+          ref={playerRef}
+          url={currentTrack.url}
+          playing={isPlaying}
+          volume={volume}
+          onEnded={nextTrack}
+          width="0"
+          height="0"
+          config={{
+            youtube: {
+              playerVars: { showinfo: 0, controls: 0, modestbranding: 1 }
+            }
+          }}
+        />
+      </div>
       
       <div className="flex items-center gap-4">
         <div className="w-10 h-10 bg-brand/10 border border-brand/20 rounded-xl flex items-center justify-center text-brand relative overflow-hidden group">
