@@ -3,7 +3,11 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Camera, RefreshCcw, Maximize, ShieldAlert, CheckCircle2, Power, Eye, EyeOff, Zap } from 'lucide-react';
 import { cn } from '../lib/utils';
 
-export const VisionModule = () => {
+interface VisionModuleProps {
+  onRepDetected?: (type: 'SQUAT' | 'DEADLIFT' | 'PRESS') => void;
+}
+
+export const VisionModule = ({ onRepDetected }: VisionModuleProps) => {
   const [isActive, setIsActive] = useState(false);
   const [showOverlay, setShowOverlay] = useState(true);
   const [autoDetect, setAutoDetect] = useState(true);
@@ -84,6 +88,8 @@ export const VisionModule = () => {
       status: 'OPTIMAL'
     }));
     
+    onRepDetected?.(exerciseType);
+
     // Reset depth after a moment
     setTimeout(() => {
       setPoseData(prev => ({ ...prev, depth: 0 }));
@@ -100,10 +106,16 @@ export const VisionModule = () => {
     let interval: any;
     if (isActive && autoDetect && isTraining && calibrationStatus === 'READY') {
       interval = setInterval(() => {
+        const incrementalRep = Math.random() > 0.8 ? 1 : 0;
+        
+        if (incrementalRep > 0) {
+          onRepDetected?.(exerciseType);
+        }
+
         setPoseData(prev => ({
           ...prev,
           depth: 70 + Math.random() * 20,
-          repCount: prev.repCount + (Math.random() > 0.8 ? 1 : 0),
+          repCount: prev.repCount + incrementalRep,
           status: Math.random() > 0.9 ? 'INCOMPLETE' : 'OPTIMAL'
         }));
       }, 3000);

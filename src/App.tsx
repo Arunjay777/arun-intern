@@ -23,6 +23,7 @@ import { BehaviorTracking } from './components/BehaviorTracking';
 import { AIChatSidebar } from './components/AIChatSidebar';
 import { ProtocolLibrary } from './components/ProtocolLibrary';
 import { AudioEngine } from './components/AudioEngine';
+import { MuscleHeatmap, MuscleGroup } from './components/MuscleHeatmap';
 
 type NavTab = 'dashboard' | 'vision' | 'diet' | 'tracking' | 'protocols';
 
@@ -30,6 +31,21 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [muscleIntensity, setMuscleIntensity] = useState<Record<MuscleGroup, number>>({
+    quads: 0, glutes: 0, hamstrings: 0, calves: 0,
+    abs: 0, chest: 0, delts: 0, biceps: 0, triceps: 0,
+    lats: 0, traps: 0, lowerBack: 0, forearms: 0
+  });
+
+  const updateMuscleHeat = (muscles: MuscleGroup[], amount: number) => {
+    setMuscleIntensity(prev => {
+      const next = { ...prev };
+      muscles.forEach(m => {
+        next[m] = Math.min(1, next[m] + amount);
+      });
+      return next;
+    });
+  };
 
   const navItems = [
     { id: 'dashboard', label: 'Command Central', icon: LayoutDashboard },
@@ -122,6 +138,15 @@ export default function App() {
                 
                 {/* Secondary Tactical Level */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Heatmap Overview */}
+                  <div className="glass-panel p-6 border-zinc-800">
+                    <h2 className="text-xl font-sans font-black tracking-tighter uppercase mb-6 flex items-center gap-2">
+                       <Zap className="text-brand" size={20} />
+                       Physiological Loop
+                    </h2>
+                    <MuscleHeatmap intensity={muscleIntensity} showLabels={true} className="w-full" />
+                  </div>
+
                   {/* Neural Feed - Scrollable Section */}
                   <div className="lg:col-span-2 space-y-6">
                     <div className="flex items-center justify-between">
@@ -252,9 +277,16 @@ export default function App() {
                 </div>
               </div>
             )}
-            {activeTab === 'vision' && <VisionModule />}
+            {activeTab === 'vision' && <VisionModule onRepDetected={(type) => {
+              const mapping: Record<string, MuscleGroup[]> = {
+                'SQUAT': ['quads', 'glutes', 'abs'],
+                'DEADLIFT': ['glutes', 'hamstrings', 'lowerBack'],
+                'PRESS': ['delts', 'chest', 'triceps']
+              };
+              updateMuscleHeat(mapping[type] || [], 0.05);
+            }} />}
             {activeTab === 'diet' && <DietEngine />}
-            {activeTab === 'tracking' && <BehaviorTracking />}
+            {activeTab === 'tracking' && <BehaviorTracking muscleIntensity={muscleIntensity} />}
             {activeTab === 'protocols' && <ProtocolLibrary />}
           </motion.div>
         </AnimatePresence>
