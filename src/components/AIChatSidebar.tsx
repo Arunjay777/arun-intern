@@ -32,19 +32,35 @@ export const AIChatSidebar = ({ isOpen, onClose }: { isOpen: boolean; onClose: (
     setIsLoading(true);
 
     try {
-      if (!ai) throw new Error("AI not configured");
+      if (!ai) {
+        setMessages(prev => [...prev, { role: 'bot', content: "AI uplink not detected. Ensure your GEMINI_API_KEY is configured in Settings." }]);
+        setIsLoading(false);
+        return;
+      }
+
+      // Convert messages to Gemini format, skipping the initial greeting if it's the very first message
+      // and ensure we don't start with a 'model' role if history is provided.
+      const history = messages
+        .slice(1) // Skip the first greeting message for the AI history
+        .map(m => ({
+          role: m.role === 'bot' ? 'model' : ('user' as const),
+          parts: [{ text: m.content }]
+        }));
 
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
-        contents: [...messages.map(m => ({ role: m.role === 'bot' ? 'model' : 'user', parts: [{ text: m.content }] })), { role: 'user', parts: [{ text: userMessage }] }],
+        contents: [...history, { role: 'user', parts: [{ text: userMessage }] }],
         config: {
           systemInstruction: SYSTEM_INSTRUCTIONS,
+          temperature: 0.7,
         }
       });
 
-      setMessages(prev => [...prev, { role: 'bot', content: response.text || "I'm processing that session data..." }]);
+      const botResponse = response.text;
+      setMessages(prev => [...prev, { role: 'bot', content: botResponse || "Biometric data processed, but no tactical guidance generated. Standing by." }]);
     } catch (error) {
-      setMessages(prev => [...prev, { role: 'bot', content: "Connection disrupted. Stay focused on the set." }]);
+      console.error("Gemini Error:", error);
+      setMessages(prev => [...prev, { role: 'bot', content: "Neural interference detected. Connection disrupted. Stay focused on the set." }]);
     } finally {
       setIsLoading(false);
     }
