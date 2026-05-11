@@ -21,11 +21,10 @@ import { VisionModule } from './components/VisionModule';
 import { DietEngine } from './components/DietEngine';
 import { BehaviorTracking } from './components/BehaviorTracking';
 import { AIChatSidebar } from './components/AIChatSidebar';
-import { ProtocolLibrary } from './components/ProtocolLibrary';
 import { AudioEngine } from './components/AudioEngine';
 import { MuscleHeatmap, MuscleGroup } from './components/MuscleHeatmap';
 
-type NavTab = 'dashboard' | 'vision' | 'diet' | 'tracking' | 'protocols';
+type NavTab = 'dashboard' | 'vision' | 'diet' | 'tracking';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
@@ -52,7 +51,6 @@ export default function App() {
     { id: 'vision', label: 'VisionAI Link', icon: ScanLine },
     { id: 'diet', label: 'Diet Engine', icon: Utensils },
     { id: 'tracking', label: 'Performance Matrix', icon: BarChart3 },
-    { id: 'protocols', label: 'Training Library', icon: BookOpen },
   ];
 
   return (
@@ -287,7 +285,6 @@ export default function App() {
             }} />}
             {activeTab === 'diet' && <DietEngine />}
             {activeTab === 'tracking' && <BehaviorTracking muscleIntensity={muscleIntensity} />}
-            {activeTab === 'protocols' && <ProtocolLibrary />}
           </motion.div>
         </AnimatePresence>
 
